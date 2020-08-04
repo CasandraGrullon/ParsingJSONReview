@@ -6,7 +6,8 @@
 //  Copyright © 2020 casandra grullon. All rights reserved.
 //
 
-import UIKit
+import Foundation
+import Combine
 
 enum AppError: Error {
     case badURL(String)
@@ -15,6 +16,22 @@ enum AppError: Error {
 }
 
 class APIClient {
+    
+    //Combine api function
+    //Combine works with Publishers and Subscribers
+    //Publishers: values emitted over time
+    //Subscribrs: recieve values and perform operations on those values
+    //Operations: Map, Filter, Sort, etc
+    func fetchDataCombine() throws -> AnyPublisher<[Station], Error> {
+        let endpoint = "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"
+        
+        guard let url = URL(string: endpoint) else {
+            throw AppError.badURL(endpoint)
+        }
+        //we only need data -> map to get back data
+        return URLSession.shared.dataTaskPublisher(for: url).map(\.data).decode(type: DataWrapper.self, decoder: JSONDecoder()).map {$0.data.stations}.eraseToAnyPublisher()
+    }
+    
     //Asynchronous calls:
     //Use a closure/callback
     //other tools you can use are delegation, NotificationCenter or Combine (new to iOS 13 +)
